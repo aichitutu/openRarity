@@ -1,0 +1,1 @@
+a simple implement of OpenRarity in golang
