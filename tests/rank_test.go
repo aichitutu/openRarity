@@ -2,9 +2,11 @@ package tests
 
 import (
 	"encoding/json"
+	"math/rand"
 	"openRarity/RarityRanker"
-	"os"
+	"strconv"
 	"testing"
+	"time"
 )
 
 func TestRankCollectionUniqueScores(t *testing.T) {
@@ -17,9 +19,11 @@ func TestRankCollectionUniqueScores(t *testing.T) {
 			"trait3": " value3",
 		}, // Token 3
 	}
+	collects = gen10wCollects()
 	var tokens = RarityRanker.RankCollection(collects)
 	resp2, _ := json.MarshalIndent(tokens, "", "\t")
-	t.Log(string(resp2))
+	s := string(resp2)
+	t.Log(s)
 }
 
 func TestRarityRankerSameScores(t *testing.T) {
@@ -56,18 +60,33 @@ func TestRarityRankerSameScores(t *testing.T) {
 }
 
 func BenchmarkRank(b *testing.B) {
-	path := "./test001.json" //contains 100000 collects
-	content,err := os.ReadFile(path)
-	if err != nil {
-		b.Fatal(err)
-	}
-	var collects []map[string]string
-	err = json.Unmarshal(content, &collects)
-	if err != nil{
-		b.Fatal(err)
-	}
+	collects := gen10wCollects()
 	b.ResetTimer()
-	for i:=0; i<b.N; i++ {
+	for i := 0; i < b.N; i++ {
 		RarityRanker.RankCollection(collects)
 	}
+}
+
+func gen10wCollects() (re []map[string]string) {
+	const collectsNum = 100000
+	const traitNum = 20
+
+	traitArr := make([]string, traitNum)
+	for i := 0; i < traitNum; i++ {
+		traitArr[i] = "trait" + strconv.Itoa(i)
+	}
+
+	re = make([]map[string]string, collectsNum)
+	for i := 0; i < collectsNum; i++ {
+		re[i] = make(map[string]string)
+		rand.Seed(time.Now().UnixNano())
+		rand.Shuffle(traitNum, func(i, j int) {
+			traitArr[i], traitArr[j] = traitArr[j], traitArr[i]
+		})
+		num := rand.Intn(18) + 2
+		for j := 0; j < num; j++ {
+			re[i][traitArr[j]] = "v" + strconv.Itoa(rand.Intn(100))
+		}
+	}
+	return
 }
