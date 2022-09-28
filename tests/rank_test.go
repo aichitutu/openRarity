@@ -19,7 +19,6 @@ func TestRankCollectionUniqueScores(t *testing.T) {
 			"trait3": " value3",
 		}, // Token 3
 	}
-	collects = gen10wCollects()
 	var tokens = RarityRanker.RankCollection(collects)
 	resp2, _ := json.MarshalIndent(tokens, "", "\t")
 	s := string(resp2)
@@ -60,14 +59,14 @@ func TestRarityRankerSameScores(t *testing.T) {
 }
 
 func BenchmarkRank(b *testing.B) {
-	collects := gen10wCollects()
+	collects := genCollects()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		RarityRanker.RankCollection(collects)
 	}
 }
 
-func gen10wCollects() (re []map[string]string) {
+func genCollects() (re []map[string]string) {
 	const collectsNum = 100000
 	const traitNum = 20
 
