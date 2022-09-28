@@ -1,7 +1,6 @@
 package RarityRanker
 
 import (
-	"fmt"
 	"math"
 	"sort"
 )
@@ -32,11 +31,7 @@ func RankCollection(collects []map[string]string) []Token {
 
 func getAllTraits(collects []map[string]string) map[string]bool {
 	var traits = make(map[string]bool)
-	for tokenId, collect := range collects {
-		if collect == nil {
-			fmt.Printf("The %dth collect is nil", tokenId)
-			continue
-		}
+	for _, collect := range collects {
 		for k := range collect {
 			if _, ok := traits[k]; !ok {
 				traits[k] = true
@@ -49,9 +44,6 @@ func getAllTraits(collects []map[string]string) map[string]bool {
 func getTraitValueStats(collects []map[string]string, traits map[string]bool) map[string]map[string]float64 {
 	var traitStats = make(map[string]map[string]float64)
 	for i, collect := range collects {
-		if collect == nil {
-			continue
-		}
 		for k, v := range collect {
 			traits[k] = false
 			if _, ok := traitStats[k]; !ok {
@@ -78,15 +70,13 @@ func getTraitValueStats(collects []map[string]string, traits map[string]bool) ma
 
 func getScore(collects []map[string]string, traitStats map[string]map[string]float64) []Token {
 	result := make([]Token, len(collects))
-	infoEntropy := getEntropy(traitStats, float64(len(collects)))
+	fLen := float64(len(collects))
+	infoEntropy := getEntropy(traitStats, fLen)
 	for tokenId, collect := range collects {
-		if collect == nil {
-			continue
-		}
 		var infoContent float64
 		for k, v := range collect {
 			if num, ok := traitStats[k][v]; ok {
-				infoContent -= math.Log2(num / float64(len(collects)))
+				infoContent -= math.Log2(num / fLen)
 			}
 		}
 		result[tokenId] = Token{
