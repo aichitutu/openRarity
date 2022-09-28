@@ -9,6 +9,23 @@ import (
 	"time"
 )
 
+func TestRarityRankerEmptyCollection(t *testing.T) {
+	collection := make([]map[string]string, 0)
+	if len(RarityRanker.RankCollection(collection)) != 0 {
+		t.Fatal()
+	}
+}
+
+func TestRarityRankerOneItem(t *testing.T) {
+	collection := []map[string]string{
+		0: {"trait1": "value1"},
+	}
+	tokens := RarityRanker.RankCollection(collection)
+	if tokens[0].Score != 0 || tokens[0].Rank != 1 {
+		t.Fatal()
+	}
+}
+
 func TestRankCollectionUniqueScores(t *testing.T) {
 	var collects = []map[string]string{
 		{"trait1": "value1", "trait2": "value1"}, // Token 0
@@ -84,7 +101,7 @@ func genCollects() (re []map[string]string) {
 		})
 		num := rand.Intn(18) + 2
 		for j := 0; j < num; j++ {
-			re[i][traitArr[j]] = "v" + strconv.Itoa(rand.Intn(100))
+			re[i][traitArr[j]] = "value" + strconv.Itoa(rand.Intn(100))
 		}
 	}
 	return
