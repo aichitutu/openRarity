@@ -5,18 +5,16 @@ import (
 	"sort"
 )
 
-type Token struct {
-	TokenId int
-	Score   float64
-	Rank    int
+type OpenRarity struct {
+	Collects []map[string]string
 }
 
 const null = "_null_"
 
-func RankCollection(collects []map[string]string) []Token {
-	if len(collects) == 0 {
+func (o OpenRarity) Rank() []Token {
+	if len(o.Collects) == 0 {
 		return []Token{}
-	} else if len(collects) == 1 {
+	} else if len(o.Collects) == 1 {
 		return []Token{
 			{
 				TokenId: 0,
@@ -25,13 +23,12 @@ func RankCollection(collects []map[string]string) []Token {
 			},
 		}
 	}
-
-	return rankTokens(getScore(collects, getTraitValueStats(collects, getAllTraits(collects))))
+	return RankTokens(o.getScore(o.getTraitValueStats(o.getAllTraits())))
 }
 
-func getAllTraits(collects []map[string]string) map[string]bool {
+func (o OpenRarity) getAllTraits() map[string]bool {
 	var traits = make(map[string]bool)
-	for _, collect := range collects {
+	for _, collect := range o.Collects {
 		for k := range collect {
 			if _, ok := traits[k]; !ok {
 				traits[k] = true
@@ -41,9 +38,9 @@ func getAllTraits(collects []map[string]string) map[string]bool {
 	return traits
 }
 
-func getTraitValueStats(collects []map[string]string, traits map[string]bool) map[string]map[string]float64 {
+func (o OpenRarity) getTraitValueStats(traits map[string]bool) map[string]map[string]float64 {
 	var traitStats = make(map[string]map[string]float64)
-	for i, collect := range collects {
+	for i, collect := range o.Collects {
 		for k, v := range collect {
 			traits[k] = false
 			if _, ok := traitStats[k]; !ok {
@@ -59,7 +56,7 @@ func getTraitValueStats(collects []map[string]string, traits map[string]bool) ma
 				} else {
 					traitStats[k][null]++
 				}
-				collects[i][k] = null
+				o.Collects[i][k] = null
 			} else {
 				traits[k] = true
 			}
@@ -68,11 +65,11 @@ func getTraitValueStats(collects []map[string]string, traits map[string]bool) ma
 	return traitStats
 }
 
-func getScore(collects []map[string]string, traitStats map[string]map[string]float64) []Token {
-	result := make([]Token, len(collects))
-	fLen := float64(len(collects))
+func (o OpenRarity) getScore(traitStats map[string]map[string]float64) []Token {
+	result := make([]Token, len(o.Collects))
+	fLen := float64(len(o.Collects))
 	infoEntropy := getEntropy(traitStats, fLen)
-	for tokenId, collect := range collects {
+	for tokenId, collect := range o.Collects {
 		var infoContent float64
 		for k, v := range collect {
 			if num, ok := traitStats[k][v]; ok {
@@ -99,7 +96,7 @@ func getEntropy(traitStats map[string]map[string]float64, collectionNum float64)
 	return infoEntropy
 }
 
-func rankTokens(tokens []Token) []Token {
+func RankTokens(tokens []Token) []Token {
 	sort.Slice(tokens, func(a, b int) bool {
 		return tokens[a].Score > tokens[b].Score
 	})
